@@ -1,6 +1,7 @@
 package android.bignerdranch.com.nerdlauncher;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
@@ -59,18 +60,33 @@ public class NerdLauncherFragment extends Fragment {
     }
 
 
-    private class ActivityHolder extends RecyclerView.ViewHolder {
+    private class ActivityHolder extends RecyclerView.ViewHolder
+    implements View.OnClickListener {
         private ResolveInfo mResolveInfo;
         private TextView mNameTextView;
         public ActivityHolder(View itemView) {
             super(itemView);
             mNameTextView = (TextView) itemView;
+            mNameTextView.setOnClickListener(this);
         }
         public void bindActivity(ResolveInfo resolveInfo) {
             mResolveInfo = resolveInfo;
             PackageManager pm = getActivity().getPackageManager();
             String appName = mResolveInfo.loadLabel(pm).toString();
             mNameTextView.setText(appName);
+        }
+
+        @Override
+        public void onClick(View v) {
+            ActivityInfo activityInfo = mResolveInfo.activityInfo;
+            Intent i = new Intent(Intent.ACTION_MAIN)
+                    .setClassName(activityInfo.applicationInfo.packageName,
+                            activityInfo.name)
+                    //If you start CriminalIntent from NerdLauncher again, you will not create a second CriminalIntent task.
+                    //The FLAG_ACTIVITY_NEW_TASK flag by itself creates one task per activity. CrimeListActivity already
+                    //has a task running, so Android will switch to that task instead of starting a new one.
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
         }
     }
 
